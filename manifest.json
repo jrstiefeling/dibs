@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "Dibs",
+  "version": "0.1.0",
+  "description": "Draft, price, and post Marketplace listings — then let Dibs handle the buyers.",
+  "permissions": [
+    "sidePanel",
+    "storage",
+    "tabs",
+    "scripting",
+    "alarms",
+    "notifications",
+    "identity"
+  ],
+  "host_permissions": [
+    "https://www.facebook.com/*",
+    "https://api.anthropic.com/*",
+    "https://api.telegram.org/*",
+    "https://www.googleapis.com/*"
+  ],
+  "oauth2": {
+    "client_id": "REPLACE_WITH_YOUR_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com",
+    "scopes": ["https://www.googleapis.com/auth/calendar.events"]
+  },
+  "background": { "service_worker": "background.js", "type": "module" },
+  "side_panel": { "default_path": "sidepanel.html" },
+  "action": { "default_title": "Open Dibs" },
+  "icons": { "128": "icons/128.png" },
+  "content_scripts": [
+    {
+      "matches": ["https://www.facebook.com/marketplace/*"],
+      "js": ["comps.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://www.facebook.com/messages/*"],
+      "js": ["messenger.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

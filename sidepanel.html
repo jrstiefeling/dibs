@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="sidepanel.css" />
+    <title>Dibs</title>
+  </head>
+  <body>
+    <header class="masthead">
+      <div class="wordmark">Dibs<span class="wordmark-dot">.</span></div>
+      <div class="standfirst" id="standfirst">Draft it, price it, post it</div>
+    </header>
+
+    <nav class="tabs" role="tablist">
+      <button class="tab" role="tab" id="tab-compose" aria-selected="true">Compose</button>
+      <button class="tab" role="tab" id="tab-queue" aria-selected="false">
+        Queue<span class="tab-count" id="queue-count" hidden>0</span>
+      </button>
+      <button class="tab" role="tab" id="tab-listings" aria-selected="false">Listings</button>
+      <button class="tab" role="tab" id="tab-tune" aria-selected="false">Tune</button>
+    </nav>
+
+    <main>
+      <!-- ============ COMPOSE ============ -->
+      <section class="pane" id="pane-compose" role="tabpanel">
+        <div class="status error" id="compose-status" hidden></div>
+
+        <div class="field">
+          <label class="field-label" for="item">What are you selling?</label>
+          <p class="hint">
+            Brand, model, age, condition, flaws, what's included. Everything you
+            say here is what Dibs will be allowed to tell buyers.
+          </p>
+          <textarea id="item" placeholder="Herman Miller Aeron, size B, black, bought 2019. One armrest pad is worn, everything else works. Comes with the original lumbar support."></textarea>
+        </div>
+
+        <div class="row field">
+          <div>
+            <label class="field-label" for="zip">Your area</label>
+            <input type="text" id="zip" placeholder="Austin, TX" />
+          </div>
+          <div>
+            <label class="field-label" for="paid">Paid new</label>
+            <input type="number" id="paid" placeholder="1400" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="goal">What matters more?</label>
+          <select id="goal">
+            <option value="price">Best price — I can wait a few weeks</option>
+            <option value="balanced" selected>Balanced</option>
+            <option value="speed">Speed — I want it gone this week</option>
+          </select>
+        </div>
+
+        <div class="actions">
+          <button class="primary" id="run-comps">Check local prices</button>
+          <button class="secondary" id="draft-btn" disabled>Write the listing</button>
+        </div>
+
+        <div id="pricing"></div>
+        <div id="draft"></div>
+      </section>
+
+      <!-- ============ QUEUE ============ -->
+      <section class="pane" id="pane-queue" role="tabpanel" hidden></section>
+
+      <!-- ============ LISTINGS ============ -->
+      <section class="pane" id="pane-listings" role="tabpanel" hidden>
+        <div class="field">
+          <label class="field-label" for="live-url">Add a listing you've posted</label>
+          <p class="hint">
+            Paste the Marketplace link. Your draft's prices, floor, and item
+            facts carry straight over.
+          </p>
+          <input type="text" id="live-url" placeholder="https://www.facebook.com/marketplace/item/..." />
+        </div>
+        <button class="primary" id="link-listing">Start watching it</button>
+
+        <div class="toggle-row" style="margin-top:20px">
+          <div>
+            <div class="dial-name">Check unread threads for me</div>
+            <div class="dial-stats" id="sweep-state">
+              Off — Dibs only reads the thread you have open.
+            </div>
+          </div>
+          <div class="seg" id="sweep-seg">
+            <button data-sweep="off" aria-pressed="true">off</button>
+            <button data-sweep="on" aria-pressed="false">on</button>
+          </div>
+        </div>
+        <p class="hint">
+          With this on, Dibs steps your Messenger tab through unread buyer
+          threads one at a time, pausing between each. Handy, but it moves your
+          tab around — leave it off until you trust the rest.
+        </p>
+
+        <div id="listing-rows"></div>
+      </section>
+
+      <!-- ============ TUNE ============ -->
+      <section class="pane" id="pane-tune" role="tabpanel" hidden>
+        <div class="field">
+          <label class="field-label" for="api-key">Anthropic API key</label>
+          <p class="hint">
+            Stored only in this browser. Used for pricing analysis and writing
+            listings — the routine buyer replies don't need it.
+          </p>
+          <input type="password" id="api-key" placeholder="sk-ant-..." />
+        </div>
+
+        <div class="row field">
+          <div>
+            <label class="field-label" for="anchor-pct">List above target by</label>
+            <input type="number" id="anchor-pct" value="18" />
+          </div>
+          <div>
+            <label class="field-label" for="floor-pct">Floor starts at</label>
+            <input type="number" id="floor-pct" value="85" />
+          </div>
+        </div>
+        <p class="hint">
+          Both are percentages. Floor eases on its own as a listing ages —
+          day 4 and day 10 each loosen it a step.
+        </p>
+
+        <div class="field">
+          <label class="field-label" for="ask-above">Always ask me above</label>
+          <input type="number" id="ask-above" value="300" />
+          <p class="hint">
+            Dibs negotiates on its own below this. Above it, every reply waits
+            for you no matter what else is switched on.
+          </p>
+        </div>
+
+        <h3 style="margin-top: 26px; font-size: 14px">Reading check</h3>
+        <p class="hint">
+          Before Dibs sends anything on its own it has to prove it can tell
+          your messages from the buyer's. Open any buyer thread in Messenger,
+          then check it here.
+        </p>
+        <div class="readercheck" id="reader-check">
+          <div class="reader-state" id="reader-state">Not checked yet.</div>
+          <div class="qbtns" style="margin-top:10px">
+            <button class="go" id="reader-probe">Check the reading</button>
+          </div>
+        </div>
+
+        <h3 style="margin-top: 26px; font-size: 14px">Where you'll meet buyers</h3>
+        <p class="hint">
+          Dibs only ever proposes these. Mark one "(public)" and it'll be used
+          for anything over $150 or any buyer you haven't dealt with before.
+        </p>
+        <div class="field">
+          <input type="text" id="locations" placeholder="Police exchange lot on 5th (public), my driveway" />
+        </div>
+
+        <h3 style="margin-top: 26px; font-size: 14px">When you're free</h3>
+        <p class="hint">
+          Day and time ranges, one per comma. Dibs offers times from these and
+          spreads them across different days.
+        </p>
+        <div class="field">
+          <input type="text" id="windows" placeholder="sat 10:00-14:00, sun 12-4pm, wed 6pm-8pm" />
+          <p class="hint" id="windows-preview"></p>
+        </div>
+
+        <div class="toggle-row">
+          <div>
+            <div class="dial-name">Also check my Google Calendar</div>
+            <div class="dial-stats" id="cal-state">Off — Dibs uses your windows as written.</div>
+          </div>
+          <div class="seg" id="cal-seg">
+            <button data-cal="off" aria-pressed="true">off</button>
+            <button data-cal="on" aria-pressed="false">on</button>
+          </div>
+        </div>
+        <p class="hint">
+          Optional, and off to start with. Turning it on skips times that clash
+          with real events and can put the handoff on your calendar. Needs a
+          Google OAuth client ID in manifest.json first — see the README.
+        </p>
+
+        <h3 style="margin-top: 26px; font-size: 14px">Reaching you when you're out</h3>
+        <p class="hint" id="channel-note">
+          All free. Pick whichever you'd actually notice. Notifications are
+          read-only — you still act in here, because a stray tap on a phone
+          shouldn't send a message about money.
+        </p>
+
+        <div class="field">
+          <label class="field-label" for="ntfy-topic">ntfy topic</label>
+          <p class="hint">
+            Easiest phone option. Install the ntfy app, invent a topic name
+            nobody would guess, put it here. No account needed — but anyone who
+            knows the topic can read it, so make it long.
+          </p>
+          <input type="text" id="ntfy-topic" placeholder="dibs-7f3k9qz-alerts" />
+        </div>
+
+        <div class="row field">
+          <div>
+            <label class="field-label" for="tg-token">Telegram bot token</label>
+            <input type="password" id="tg-token" placeholder="optional" />
+          </div>
+          <div>
+            <label class="field-label" for="tg-chat">Chat ID</label>
+            <input type="text" id="tg-chat" placeholder="optional" />
+          </div>
+        </div>
+        <p class="hint">
+          Message @BotFather, send /newbot, paste the token. Free — Telegram
+          doesn't charge for bots.
+        </p>
+
+        <div class="field">
+          <label class="field-label" for="discord-hook">Discord webhook</label>
+          <input type="text" id="discord-hook" placeholder="optional" />
+        </div>
+
+        <button class="secondary" id="test-push">Send a test alert</button>
+
+        <button class="primary" id="save-settings">Save settings</button>
+
+        <h3 style="margin-top: 28px; font-size: 14px">What Dibs handles on its own</h3>
+        <div id="dials"></div>
+
+        <div class="bench">
+          <h3>Try a message on it</h3>
+          <p class="hint">See what Dibs would do before you move any dial.</p>
+          <div class="field">
+            <textarea id="bench-in" placeholder="would you take 45 for it?" style="min-height:60px"></textarea>
+          </div>
+          <div class="row field">
+            <div><label class="field-label" for="bench-target">Target</label><input type="number" id="bench-target" value="70" /></div>
+            <div><label class="field-label" for="bench-day">Day</label><input type="number" id="bench-day" value="0" /></div>
+            <div><label class="field-label" for="bench-history">Past offers</label><input type="text" id="bench-history" placeholder="30, 40" /></div>
+          </div>
+          <button class="secondary" id="bench-run">Run it</button>
+          <div class="bench-out" id="bench-out"></div>
+        </div>
+
+        <h3 style="margin-top: 28px; font-size: 14px">This month</h3>
+        <table class="tier-table">
+          <tr><td>Handled with no model at all</td><td id="m-tier0">0</td></tr>
+          <tr><td>Handled on your machine, free</td><td id="m-tier1">0</td></tr>
+          <tr><td>Sent to the cloud</td><td id="m-tier2">0</td></tr>
+          <tr><td>Estimated spend</td><td id="m-spend">$0.00</td></tr>
+        </table>
+      </section>
+    </main>
+
+    <script type="module" src="sidepanel.js"></script>
+  </body>
+</html>
